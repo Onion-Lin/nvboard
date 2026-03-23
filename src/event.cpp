@@ -56,6 +56,7 @@ void read_event() {
           switch (ev.key.keysym.sym) {
             case SDLK_RETURN: uart_rx_getchar('\n'); break;
             case SDLK_BACKSPACE: uart_rx_getchar('\b'); break;
+            case SDLK_TAB: uart_rx_getchar('\t'); break;
           }
         }
       case SDL_KEYUP:
