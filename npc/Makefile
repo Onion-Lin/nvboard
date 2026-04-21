@@ -1,10 +1,15 @@
+# Makefile for building the NVBoard example with Verilator
+# 使用前请设置环境变量 `NVBOARD_HOME` 指向 nvboard 仓库根目录
+# 说明：
+# - `TOPNAME` 指定顶层模块名（对应 Verilog 中的 module 名称）
+# - `NXDC_FILES` 指定约束文件（用于自动绑定引脚）
 TOPNAME = top
 NXDC_FILES = constr/top.nxdc
 INC_PATH ?=
 
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc  \
-				-O3 --x-assign fast --x-initial fast --noassert
+				-O3 --x-assign fast --x-initial fast --noassert --trace
 
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
@@ -29,7 +34,7 @@ include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 # rules for verilator
 INCFLAGS = $(addprefix -I, $(INC_PATH))
-CXXFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
+CXXFLAGS += $(INCFLAGS) -DTOP_NAME=V$(TOPNAME)
 
 $(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
 	@rm -rf $(OBJ_DIR)
@@ -40,10 +45,20 @@ $(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
 
 all: default
 
-run: $(BIN)
+run: sim
 	@$^
+
+sim:$(BIN)
+	$(call git_commit, "sim RTL") 
+	@$^
+	
+lint:
+	@verilator --lint-only $(VSRCS)
 
 clean:
 	rm -rf $(BUILD_DIR)
 
 .PHONY: default all clean run
+
+
+
