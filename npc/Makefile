@@ -1,8 +1,3 @@
-# Makefile for building the NVBoard example with Verilator
-# 使用前请设置环境变量 `NVBOARD_HOME` 指向 nvboard 仓库根目录
-# 说明：
-# - `TOPNAME` 指定顶层模块名（对应 Verilog 中的 module 名称）
-# - `NXDC_FILES` 指定约束文件（用于自动绑定引脚）
 TOPNAME = top
 NXDC_FILES = constr/top.nxdc
 INC_PATH ?=

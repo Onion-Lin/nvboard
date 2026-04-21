@@ -1,3 +1,7 @@
+// vga_ctrl.v - 简单的 VGA 时序生成与像素输出模块
+// 输入：像素时钟 `pclk`，复位 `reset`，以及来自显存的 `vga_data`（24-bit RGB）
+// 输出：当前像素地址 `h_addr`/`v_addr`，同步信号 `hsync`/`vsync`，
+//       有效区信号 `valid`，以及分拆后的 `vga_r/g/b`。
 module vga_ctrl (
     input pclk,
     input reset,
@@ -12,6 +16,7 @@ module vga_ctrl (
     output [7:0] vga_b
 );
 
+// 以下参数定义了水平/垂直时序的边界值（front porch/active/back porch/total）
 parameter h_frontporch = 96;
 parameter h_active = 144;
 parameter h_backporch = 784;
@@ -22,11 +27,13 @@ parameter v_active = 35;
 parameter v_backporch = 515;
 parameter v_total = 525;
 
+// 像素扫描计数器
 reg [9:0] x_cnt;
 reg [9:0] y_cnt;
 wire h_valid;
 wire v_valid;
 
+// 基于像素时钟 pclk 的计数器：横向计数 x_cnt，满后横向回零并纵向 y_cnt++
 always @(posedge pclk) begin
     if(reset == 1'b1) begin
         x_cnt <= 1;
@@ -42,17 +49,17 @@ always @(posedge pclk) begin
     end
 end
 
-//生成同步信号    
+// 生成同步信号（hsync/vsync），注意这些表达式与具体时序参数有关
 assign hsync = (x_cnt > h_frontporch);
 assign vsync = (y_cnt > v_frontporch);
-//生成消隐信号
+// 生成是否在可见区域的标志
 assign h_valid = (x_cnt > h_active) & (x_cnt <= h_backporch);
 assign v_valid = (y_cnt > v_active) & (y_cnt <= v_backporch);
 assign valid = h_valid & v_valid;
-//计算当前有效像素坐标
+// 计算当前有效像素坐标（减去前导和同步区的偏移）
 assign h_addr = h_valid ? (x_cnt - 10'd145) : 10'd0;
 assign v_addr = v_valid ? (y_cnt - 10'd36) : 10'd0;
-//设置输出的颜色值
+// 将 24 位像素数据分配到 R/G/B 输出
 assign {vga_r, vga_g, vga_b} = vga_data;
 
 endmodule

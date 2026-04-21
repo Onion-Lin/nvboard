@@ -1,3 +1,8 @@
+// top.v - 演示用顶层模块（连接 NVBoard 的外设与显示）
+// 端口说明：
+// - 时钟/复位/按键/拨码开关用于交互
+// - PS/2 和 UART 提供两种输入通道
+// - VGA 输出显示图像，数码管和 LED 显示辅助信息
 module top(
     input clk,
     input rst,
@@ -25,6 +30,7 @@ module top(
     output [7:0] seg7
 );
 
+// LED 显示模块：左侧流水灯 + 根据开关/按键控制
 led my_led(
     .clk(clk),
     .rst(rst),
@@ -33,12 +39,15 @@ led my_led(
     .ledr(ledr)
 );
 
+// VGA 像素时钟直接使用系统时钟（若需更精确时钟，可替换）
 assign VGA_CLK = clk;
 
 wire [9:0] h_addr;
 wire [9:0] v_addr;
 wire [23:0] vga_data;
 
+
+// VGA 控制器：生成时序并输出 RGB 数据
 vga_ctrl my_vga_ctrl(
     .pclk(clk),
     .reset(rst),
@@ -53,6 +62,7 @@ vga_ctrl my_vga_ctrl(
     .vga_b(VGA_B)
 );
 
+// PS/2 键盘接收：采样并打印扫描码到终端
 ps2_keyboard my_keyboard(
     .clk(clk),
     .resetn(~rst),
@@ -60,6 +70,8 @@ ps2_keyboard my_keyboard(
     .ps2_data(ps2_data)
 );
 
+
+// 数码管显示：显示流水 0-7
 seg my_seg(
     .clk(clk),
     .rst(rst),
@@ -73,15 +85,17 @@ seg my_seg(
     .o_seg7(seg7)
 );
 
+// vmem：VGA 显示用的显存，使用 $readmemh 从 resource/picture.hex 加载图像数据
 vmem my_vmem(
     .h_addr(h_addr),
     .v_addr(v_addr[8:0]),
     .vga_data(vga_data)
 );
 
+// UART：示例中为简单回环或终端连接
 uart my_uart(
-  .tx(uart_tx),
-  .rx(uart_rx)
+    .tx(uart_tx),
+    .rx(uart_rx)
 );
 
 endmodule
@@ -92,12 +106,17 @@ module vmem(
     output [23:0] vga_data
 );
 
+
+// vga 内存声明：24-bit RGB，每个地址映射一个像素。
+// 数组大小 524288 = 2^19，索引使用 {h_addr, v_addr} 组合以适配地址宽度。
 reg [23:0] vga_mem [524287:0];
 
 initial begin
+    // 从工程的 resource 目录加载预先生成的图像数据（hex 格式）
     $readmemh("resource/picture.hex", vga_mem);
 end
 
+// 使用拼接的地址访问显存，注意 v_addr 在 top 中被截取为 9 位
 assign vga_data = vga_mem[{h_addr, v_addr}];
 
 endmodule
