@@ -79,7 +79,6 @@ module top(
     .rx(uart_rx)
 );
 
-// VGA 像素时钟直接使用系统时钟（若需更精确时钟，可替换）
 assign VGA_CLK = clk;
 
 wire [9:0] h_addr;
@@ -87,7 +86,6 @@ wire [9:0] v_addr;
 wire [23:0] vga_data;
 
 
-// VGA 控制器：生成时序并输出 RGB 数据
 vga my_vga_ctrl(
     .pclk(clk),
     .reset(rst),
@@ -101,7 +99,7 @@ vga my_vga_ctrl(
     .vga_g(VGA_G),
     .vga_b(VGA_B)
 );
-// vmem：VGA 显示用的显存，使用 $readmemh 从 resource/picture.hex 加载图像数据
+
 vmem my_vmem(
     .h_addr(h_addr),
     .v_addr(v_addr[8:0]),

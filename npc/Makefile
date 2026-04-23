@@ -45,7 +45,7 @@ $(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
 
 all: default
 
-run: sim
+run: $(BIN)
 	@$^
 
 sim:$(BIN)
