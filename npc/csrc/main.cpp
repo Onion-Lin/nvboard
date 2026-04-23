@@ -1,7 +1,9 @@
-// 简化并修正的 Verilator + NVBoard 示例主程序
-#define VCD_TRACE 1
 #include <verilated.h>
+// 关闭默认波形追踪（设为 1 可开启）
+#define VCD_TRACE 0
+#if VCD_TRACE
 #include <verilated_vcd_c.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -10,7 +12,9 @@
 
 // 顶层模型实例指针（TOP_NAME 由 Makefile 的 -D 宏定义）
 static TOP_NAME* top = nullptr;
+#if VCD_TRACE
 static VerilatedVcdC* tfp = nullptr;
+#endif
 static vluint64_t sim_time = 0;
 
 // 声明：自动生成的绑定函数（由 scripts/auto_pin_bind.py 生成到 build/auto_bind.cpp）

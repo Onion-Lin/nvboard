@@ -9,7 +9,7 @@ INC_PATH ?=
 
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc  \
-				-O3 --x-assign fast --x-initial fast --noassert --trace
+				-O3 --x-assign fast --x-initial fast --noassert
 
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
@@ -59,6 +59,19 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 .PHONY: default all clean run
+
+# Helper: generate vga hex file from an image
+IMAGE_SRC ?=
+IMAGE_OUT ?= vga_image.hex
+
+gen-image:
+ifneq ($(strip $(IMAGE_SRC)),)
+	python3 tools/convert_to_hex.py $(IMAGE_SRC) $(IMAGE_OUT)
+else
+	$(error IMAGE_SRC is not set. Usage: make gen-image IMAGE_SRC=path/to/img.png)
+endif
+
+.PHONY: gen-image
 
 
 
